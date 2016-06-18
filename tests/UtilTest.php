@@ -1,9 +1,8 @@
 <?php
 
-use phpunit\framework\TestCase;
 use CareyLi\s2h;
 
-class UtilTest extends TestCase
+class UtilTest extends \PHPUnit_Framework_TestCase
 {
 
     public function testcoalesceNull()
