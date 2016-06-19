@@ -19,4 +19,16 @@ class Util
 			}
 		}
 	}
+
+	/*
+	 * Attempts to get a $_GET variable, if non-existent return null.
+	 */
+	public static function getArgExists($arg)
+	{
+		if (isset($_GET[$arg])) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 }

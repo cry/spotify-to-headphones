@@ -1,29 +1,52 @@
-<?php
+<?php session_start();
 
 	require __DIR__ . '/vendor/autoload.php';
 
 	use \CareyLi\s2h;
+	use \utilphp\util;
 
-	$util = new s2h\Util();
-	$database = new s2h\Database();
+	$whoops = new \Whoops\Run;
+	$whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
+	$whoops->register();
 
+	$model = new s2h\model();
+	$view = new \League\Plates\Engine("./src/templates");
+	$controller = new s2h\Controller($model, $view);
+
+	$router = new \Klein\Klein();
+
+	/*
+	 * Check for first run, redirect if so.
+	 */
+
+	if ($model->isFirstRun() && strpos(util::get_current_url(), 'first-run') === FALSE) {
+		header("Location: ./first-run");
+		exit;
+	}
+
+	$router->respond('GET', '/', function($request) use ($controller) {
+		$controller->index();
+	});
+
+	$router->with('/first-run', function() use ($router, $controller, $model) {
+
+		$router->respond('GET', '/?', function($request) use ($controller) {
+			$controller->firstRun();
+		});
+
+		$router->respond('POST', '/?', function($request) use ($controller) {
+			$controller->firstRunSave();
+		});
+
+	});
+
+	$router->with('/settings', function() use ($router, $controller) {
+
+		$router->response('GET', '/', function($request) use ($controller) {
+			$controller->settings();
+		});
+
+	});
+
+	$router->dispatch();
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Spotify -> Headphones</title>
-
-	<meta name="description" content="Sends spotify playlist to headphones usenet downloader." />
-	<meta name="keywords" content="" />
-	<meta name="author" content="https://github.com/carey-li">
-	<meta name="author" content="metatags generator">
-	<meta name="robots" content="noindex, nofollow">
-	<title>Spotify -> Headphones</title>
-
-	<link rel="stylesheet" href="assets/css/bootstrap.min.css">
-</head>
-<body>
-	
-</body>
-</html>

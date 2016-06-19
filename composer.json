@@ -3,5 +3,12 @@
 		"psr-4": {
 			"CareyLi\\": "src/CareyLi"
 		}
+	},
+	"require": {
+		"league/plates": "^3.1",
+		"klein/klein": "^2.1",
+		"brandonwamboldt/utilphp": "1.0.*",
+		"filp/whoops": "^2.1",
+		"jwilsson/spotify-web-api-php": "^1.0.0"
 	}
 }
