@@ -9,7 +9,7 @@
 	$whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
 	$whoops->register();
 
-	$model = new s2h\model();
+	$model = new s2h\Model();
 	$view = new \League\Plates\Engine("./src/templates");
 	$controller = new s2h\Controller($model, $view);
 
