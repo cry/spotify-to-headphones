@@ -6,17 +6,24 @@
 	}
 </style>
 
-<h1>Initial Setup</h1> <br>
+<h2>Initial Setup</h2> <br>
 
 <form action="" method="post" class="form-horizontal">
 
 	<div class="alert alert-danger">
-		<strong>S2H does not provide authentication for itself</strong>. It is assumed you will be placing this in a secure VLAN or reverse proxying it.
+		<strong>Ensure that http://<?=$redirect_url?> is listed in authorized redirects in your spotify application page.</strong>
 	</div>
+
 
 	<fieldset>
 		<legend>Headphones Details</legend>
 		<p>Provide your Headphones API key so S2H can mark albums as wanted.</p> <br>
+		<div class="form-group">
+			<label for="headphones_host" class="col-md-2 control-label">Headphones Hostname or IP</label>
+			<div class="col-md-10">
+				<input type="text" class="form-control" name="headphones_host" id="headphones_host" placeholder="https://headphones.host or https://127.0.0.1:8080" value="" autocomplete="off" required>
+			</div>
+		</div>
 		<div class="form-group">
 			<label for="headphones" class="col-md-2 control-label">Headphones API Key</label>
 			<div class="col-md-10">

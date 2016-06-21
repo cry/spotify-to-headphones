@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<title><?=$this->e($title)?> | Spotify to Headphones</title>
 
-	<link rel="stylesheet" href="assets/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/assets/css/bootstrap.min.css">
 </head>
 <body>
 

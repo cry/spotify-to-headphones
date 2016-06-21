@@ -10,40 +10,15 @@ class Model
 	private $db;
 	private $spotify_api;
 
-    /**
-     * Init of DB
-     */
     public function __construct()
     {
-    	if (!file_exists("s2h")) {
-    		$this->db = new \PDO("sqlite:s2h");
+    	if (!file_exists("s2h.db")) {
+    		$this->db = new \PDO("sqlite:s2h.db");
     		$schema = file_get_contents("schema.sql");
     		$this->db->exec($schema);
     	} else {
-    		$this->db = new \PDO("sqlite:s2h");
+    		$this->db = new \PDO("sqlite:s2h.db");
     	}
-
-    	if (!$this->isFirstRun()) {
-    		/*
-	    	 * Get spotify API hook
-	    	 */
-
-	    	$spotify_keys = $this->getSpotifyKeys();
-
-	    	$this->spotify_api = new \SpotifyWebAPI\SpotifyWebAPI();
-
-	    	$spotify_session = new \SpotifyWebAPI\Session($spotify_keys['client_id'], $spotify_keys['client_secret'], 'http://localhost:8081/');
-
-	    	$scopes = array(
-			    'playlist-read-private',
-			    'user-read-private'
-			);
-
-			$spotify_session->requestCredentialsToken($scopes);
-			$accessToken = $spotify_session->getAccessToken();
-			$this->spotify_api->setAccessToken($accessToken);	
-    	}
-
     }
 
     public function executePreparedInsert($sql, $params) {
@@ -56,7 +31,7 @@ class Model
     	$handle = $this->db->prepare($sql);
     	$handle->execute($params);
 
-    	return $handle->fetch();
+    	return $handle->fetch(\PDO::FETCH_ASSOC);
     }
 
     public function isFirstRun() {
@@ -72,14 +47,15 @@ class Model
 
     public function updateSettings($params) {
 
-		$sql = "INSERT INTO api_data (client_id, client_secret, headphones_key) VALUES (:client_id, :client_secret, :headphones_key);";
+		$sql = "INSERT INTO api_data (client_id, client_secret, headphones_key, headphones_host) VALUES (:client_id, :client_secret, :headphones_key, :headphones_host);";
 
 		$this->db->beginTransaction();
 
 		$this->executePreparedInsert($sql, array(
 			":client_id" => $params['client_id'],
 			":client_secret"  => $params['client_secret'],
-			":headphones_key" => $params['headphones_key']
+			":headphones_key" => $params['headphones_key'],
+			":headphones_host" => $params['headphones_host']
 		));
 
 		$this->db->commit();
@@ -88,8 +64,25 @@ class Model
 
     }
 
-    public function getSpotifyKeys() {
-    	$sql = "SELECT client_id, client_secret FROM api_data";
+    /*
+     *
+     * Spotify related functions.
+     *
+     */
+
+    public function spotifyAccessTokensExist() {
+
+    	$data = $this->executePreparedSelect("SELECT * FROM api_data");
+
+    	if ($data['access_token'] == null || $data['refresh_token'] == null) {
+    		return false;
+    	}
+
+    	return true;
+    }
+
+    private function getSpotifyClientDetails() {
+    	$sql = "SELECT client_id, client_secret, access_token, refresh_token FROM api_data";
 
     	try {
     		$result = $this->executePreparedSelect($sql);
@@ -101,5 +94,50 @@ class Model
     		"client_id" => $result['client_id'],
     		"client_secret" => $result['client_secret']
     	);
+    }
+
+    public function getSpotifyAuthorizeUrl() {
+    	$client = $this->getSpotifyClientDetails();
+
+    	$session = new \SpotifyWebAPI\Session($client['client_id'], $client['client_secret'], 'http://' . $_SERVER['HTTP_HOST'] . "/spotify_callback/");
+
+    	$scopes = array(
+		    'playlist-read-private',
+		    'user-read-private'
+		);
+
+		$authorizeUrl = $session->getAuthorizeUrl(array(
+		    'scope' => $scopes
+		));
+
+		return $authorizeUrl;
+    }
+
+    public function setSpotifyAccessToken($code) {
+    	$client = $this->getSpotifyClientDetails();
+
+    	$session = new \SpotifyWebAPI\Session($client['client_id'], $client['client_secret'], 'http://' . $_SERVER['HTTP_HOST'] . "/spotify_callback/");
+
+		$this->spotify_api = new \SpotifyWebAPI\SpotifyWebAPI();
+
+		// Request a access token using the code from Spotify
+		$session->requestAccessToken($code);
+		$accessToken = $session->getAccessToken();
+
+		// Set the access token on the API wrapper
+		$this->spotify_api->setAccessToken($accessToken);
+
+		// Write the tokens to persistent storage
+
+		$sql = "INSERT INTO api_data (access_token, refresh_token) VALUES (:access_token, :refresh_token);";
+
+		$this->db->beginTransaction();
+
+		$this->executePreparedInsert($sql, array(
+			":access_token" => $accessToken,
+			":refresh_token" => $session->getRefreshToken()
+		));
+
+		$this->db->commit();
     }
 }

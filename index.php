@@ -28,6 +28,10 @@
 		$controller->index();
 	});
 
+	$router->respond('GET', '/spotify_callback/?', function($request) use ($controller) {
+		$controller->spotify_oauth();
+	});
+
 	$router->with('/first-run', function() use ($router, $controller, $model) {
 
 		$router->respond('GET', '/?', function($request) use ($controller) {
