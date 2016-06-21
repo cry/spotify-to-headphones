@@ -129,13 +129,14 @@ class Model
 
 		// Write the tokens to persistent storage
 
-		$sql = "INSERT INTO api_data (access_token, refresh_token) VALUES (:access_token, :refresh_token);";
+		$sql = "INSERT INTO api_data (access_token, refresh_token) VALUES (:access_token, :refresh_token) WHERE client_id LIKE :client_id;";
 
 		$this->db->beginTransaction();
 
 		$this->executePreparedInsert($sql, array(
 			":access_token" => $accessToken,
-			":refresh_token" => $session->getRefreshToken()
+			":refresh_token" => $session->getRefreshToken(),
+			":client_id" => $client['client_id']
 		));
 
 		$this->db->commit();
