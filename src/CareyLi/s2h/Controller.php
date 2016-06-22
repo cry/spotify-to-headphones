@@ -2,9 +2,8 @@
 
 namespace CareyLi\s2h;
 
-/**
- * Main controller
- */
+use \utilphp\util;
+
 class Controller
 {
 
@@ -22,9 +21,14 @@ class Controller
     		echo $this->view->render("spotify_oauth_info", array(
     			"authorize_url" => $this->model->getSpotifyAuthorizeUrl()
     		));
-    	} else {
-    		echo $this->view->render("index");
+    		exit;
     	}
+
+    	//util::var_dump($this->model->getUserPlaylists());
+
+    	echo $this->view->render("index", array(
+    		"playlists" => $this->model->getUserPlaylists()
+    	));
     }
 
     public function firstRun() {
@@ -46,18 +50,22 @@ class Controller
 		}
 
 		if ($this->model->updateSettings($request)) {
-			echo '<meta http-equiv="refresh" content="0; url=./">';
+    		echo '<meta http-equiv="refresh" content="0; url=http://'. $_SERVER['HTTP_HOST'] .'/">';
 			exit;
 		}
     }
 
     public function spotify_oauth() {
-    	if (isset($_GET['code'])) {
-    		$this->model->setSpotifyAccessToken($_GET['code']);
-    	} else {
+    	if (!isset($_GET['code'])) {
     		echo 'MISSING SPOTIFY ACCESS TOKEN';
     		exit;
     	}
+
+    	if ($this->model->setSpotifyAccessToken($_GET['code'])) {
+    		echo '<meta http-equiv="refresh" content="0; url=http://'. $_SERVER['HTTP_HOST'] .'/">';
+			exit;
+    	}
+
     }
 
     public function settings() {

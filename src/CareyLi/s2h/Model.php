@@ -9,6 +9,7 @@ class Model
 
 	private $db;
 	private $spotify_api;
+	private $spotify_user;
 
     public function __construct()
     {
@@ -18,6 +19,22 @@ class Model
     		$this->db->exec($schema);
     	} else {
     		$this->db = new \PDO("sqlite:s2h.db");
+    	}
+
+    	if ($this->spotifyAccessTokensExist()) {
+
+    		$tokens = $this->getSpotifyClientDetails();
+    		
+    		$session = new \SpotifyWebAPI\Session($tokens['client_id'], $tokens['client_secret'], 'http://' . $_SERVER['HTTP_HOST'] . "/spotify_callback/");
+			$this->spotify_api = new \SpotifyWebAPI\SpotifyWebAPI();
+
+			$session->refreshAccessToken($tokens['refresh_token']);
+
+			$accessToken = $session->getAccessToken();
+
+			$this->spotify_api->setAccessToken($accessToken);
+
+			$this->spotify_user = $this->spotify_api->me();
     	}
     }
 
@@ -67,6 +84,7 @@ class Model
     /*
      *
      * Spotify related functions.
+     * ::: Authorization & Administration :::
      *
      */
 
@@ -85,15 +103,10 @@ class Model
     	$sql = "SELECT client_id, client_secret, access_token, refresh_token FROM api_data";
 
     	try {
-    		$result = $this->executePreparedSelect($sql);
+    		return $this->executePreparedSelect($sql);
     	} catch	(Exception $e) {
     		throw new \Exception("Could not retrieve spotify keys.");
     	}
-
-    	return array(
-    		"client_id" => $result['client_id'],
-    		"client_secret" => $result['client_secret']
-    	);
     }
 
     public function getSpotifyAuthorizeUrl() {
@@ -120,16 +133,12 @@ class Model
 
 		$this->spotify_api = new \SpotifyWebAPI\SpotifyWebAPI();
 
-		// Request a access token using the code from Spotify
 		$session->requestAccessToken($code);
 		$accessToken = $session->getAccessToken();
 
-		// Set the access token on the API wrapper
 		$this->spotify_api->setAccessToken($accessToken);
 
-		// Write the tokens to persistent storage
-
-		$sql = "INSERT INTO api_data (access_token, refresh_token) VALUES (:access_token, :refresh_token) WHERE client_id LIKE :client_id;";
+		$sql = "UPDATE api_data SET access_token=:access_token, refresh_token=:refresh_token WHERE client_id=:client_id;";
 
 		$this->db->beginTransaction();
 
@@ -140,5 +149,100 @@ class Model
 		));
 
 		$this->db->commit();
+
+		return true;
     }
+
+    /*
+     *
+     * Spotify related functions.
+     * ::: User data retrieval :::
+     *
+     * __function() --> Raw spotify ingest data
+     */
+
+    private function __getUserPlaylists() {
+    	return $this->spotify_api->getMyPlaylists();
+    }
+
+    private function __getPlaylistSongs($user, $id, $index = 0) {
+    	return $this->spotify_api->getUserPlaylistTracks($user, $id, array(
+            "offset" => $index
+        ));
+    }
+
+    public function getUserPlaylists() { //return $this->__getUserPlaylists();
+    	$ingest_data = $this->__getUserPlaylists();
+    	$playlists = array();
+
+    	foreach ($ingest_data->items as $playlist) {
+
+    		$playlists[] = array(
+    			"name" => $playlist->name,
+    			"id"   => $playlist->id,
+    			"owner" => $playlist->owner->id,
+    			"owner_uri" => $playlist->owner->uri,
+                "owner_id" => $playlist->owner->id,
+    			"uri"  => $playlist->uri,
+    			"image" => count($playlist->images) === 0 ? "data:image/gif;base64,R0lGODlhAQABAIAAAMLCwgAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" : $playlist->images[0]->url
+    		);
+    	}
+
+    	return $playlists;
+    }
+
+    public function getPlaylistSongs($user, $id) {
+        $ingest_data = $this->__getPlaylistSongs($user, $id);
+        $songs = array();
+        $index = 0;
+
+        get_additional:
+        if ($ingest_data->total - $index > 100) {
+            $index += 100;
+            $additional_data = $this->__getPlaylistSongs($user, $id, $index);
+
+            $ingest_data->items = array_merge($ingest_data->items, $additional_data->items);
+
+            goto get_additional;
+        } elseif (($ingest_data->total - $index) < 100 && ($ingest_data->total - $index) !== 0) {
+            $index = $ingest_data->total;
+
+            $additional_data = $this->__getPlaylistSongs($user, $id, $index);
+            $ingest_data->items = array_merge($ingest_data->items, $additional_data->items);
+
+            goto get_additional;
+        }
+
+        foreach ($ingest_data->items as $song) {
+            $songs[] = array(
+                "id" => $song->track->id,
+                "name" => $song->track->name,
+                "artist" => $song->track->artists[0]->name,
+                "artist_id" => $song->track->artists[0]->id,
+                "album" => $song->track->album->name,
+                "album_id" => $song->track->album->id,
+                "preview" => $song->track->preview_url
+            );
+        }
+
+        return $songs;
+    }
+
+    /*
+     *
+     * Headphones related functions
+     * ::: Authorization & Administration :::
+     *
+     */
+
+    public function getHpClientDetails() {
+        $sql = "SELECT headphones_key, headphones_host FROM api_data";
+
+        try {
+            return $this->executePreparedSelect($sql);
+        } catch (Exception $e) {
+            throw new \Exception("Could not retrieve headphones details.");
+        }
+    }
+
 }

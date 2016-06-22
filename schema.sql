@@ -1,7 +1,6 @@
 ---api_data
 	CREATE TABLE api_data (
 		id 					INTEGER PRIMARY KEY ASC,
-		name 				VARCHAR(100),
 		client_id 			VARCHAR(100),
 		client_secret 		VARCHAR(100),
 		access_token 		VARCHAR(100),
@@ -16,4 +15,11 @@
 		type 				VARCHAR(50),
 		epoch 				INTEGER,
 		message 			VARCHAR(200)
-	);z
+	);
+
+---cache
+	CREATE TABLE cache (
+		id 					INTEGER PRIMARY KEY ASC,
+		artist 				VARCHAR(150),
+		album 				VARCHAR(150)
+	);
