@@ -20,6 +20,7 @@ Spotify to Headphones allows you to view all of your spotify playlists and send 
 
 - Clone this repo, i.e. `git clone https://github.com/carey-li/spotify-to-headphones.git`
 - Place the files in the webroot, i.e. `/var/www`, `/srv`
+- Run `composer install` to grab dependencies, install composer from [here](https://getcomposer.org/download/) if you don't have it.
 - Modify your webserver config to enable directory rewriting, i.e.
 
 ~~~
