@@ -4,5 +4,5 @@
 
 Spotify to Headphones allows you to view all of your spotify playlists and send albums directly to Headphones for download, all in one place.
 
-![Banner](https://λ.ml/s2h_banner.png)
+![Banner](https://carey.li/s2h_banner.png)
 
