@@ -23,7 +23,11 @@ Spotify to Headphones allows you to view all of your spotify playlists and send 
 ~~~
 
         location / {
-                try_files $uri $uri/ /index.php?$args;
+            try_files $uri $uri/ /index.php?$args;
+        }
+
+        location /subdirectory/ {
+            try_files $uri $uri/ /subdirectory/index.php?$args;
         }
 
 ~~~
