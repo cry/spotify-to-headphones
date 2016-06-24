@@ -31,7 +31,7 @@
     </thead>
     <tbody>
         <?php foreach($songs as $song): ?>
-            <tr>
+            <tr <?php if (isset($song['wanted'])) echo 'class="text-muted"'; ?>>
                 <td><audio controls preload="none"> <source src="<?=$song['preview']?>" type="audio/mpeg"> Your browser does not support the audio element. </audio></td>
                 <td><?=$song['name']?></td>
                 <td><?=$song['artist']?></td>
