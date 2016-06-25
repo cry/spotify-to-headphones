@@ -48,7 +48,7 @@ Spotify to Headphones allows you to view all of your spotify playlists and send 
 - Note down the Client ID and Client Secret
 - Add the URL from before into the authorized URIS
 
-![Spotify Redirect](https://carey.li/s2h_spotify_redirect.png.png?cache=1)
+![Spotify Redirect](https://carey.li/s2h_spotify_redirect.png.png?cache=2)
 
 ### Headphones Setup
 
