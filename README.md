@@ -1,9 +1,9 @@
 # Spotify → Headphones
 
-#### This project is in very early development. Expect bugs.
-#### As of now, this must be placed in a subdomain, i.e. https://s2h.domain/
-
 [![Build Status](https://travis-ci.org/carey-li/spotify-to-headphones.svg?branch=develop)](https://travis-ci.org/carey-li/spotify-to-headphones)
+
+#### This project is in very early development. Expect bugs.
+#### As of now, this must be placed at the root web directory, i.e. https://s2h.domain/ or https://localhost:3300/
 
 Spotify to Headphones allows you to view all of your spotify playlists and send albums directly to Headphones for download, all in one place.
 
