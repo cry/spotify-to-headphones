@@ -35,7 +35,33 @@ Spotify to Headphones allows you to view all of your spotify playlists and send 
 - Ensure the directory is writable by the webserver user, i.e. `www-data`
     - `chown -R www-data:www-data /srv/s2h`
 
-## Usage
+## First-run Setup
 
 - Navigate to the webroot, S2H will run through a first run
+    - Note the url the setup shows in the red banner
+    ![Redirect](https://carey.li/s2h_redirect.png?cache=1)
 
+### Setting up the Spotify Application
+
+- Navigate to `https://developer.spotify.com/my-applications/#!/applications`
+- Create an application, name and description can be arbitrary.
+- Note down the Client ID and Client Secret
+- Add the URL from before into the authorized URIS
+
+![Spotify Redirect](https://carey.li/s2h_spotify_redirect.png.png?cache=1)
+
+### Headphones Setup
+
+- Retrieve your API key from your Headphones setting page
+
+![Headphones API](https://carey.li/s2h_headphones_api.png)
+
+- Afterwards, your settings page should look something like this
+
+![First Run](https://carey.li/s2h_firstrun.png)
+
+## Screenshots
+
+*Select Modal*
+
+![Select](https://carey.li/s2h_select.png)
