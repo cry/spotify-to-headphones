@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/carey-li/spotify-to-headphones.svg?branch=develop)](https://travis-ci.org/carey-li/spotify-to-headphones)
 
+## This project is depreciated. Please use another project! 
+
 #### This project is in very early development. Expect bugs.
 #### As of now, this must be placed at the root web directory, i.e. https://s2h.domain/ or https://localhost:3300/
 
